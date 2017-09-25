@@ -1,0 +1,3 @@
+# load config from yaml file in current dir
+conf = load_config(str(pathlib.Path('.') / 'config' / 'polls.yaml'))
+app['config'] = conf
