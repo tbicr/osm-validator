@@ -1,6 +1,8 @@
 from aiohttp import web
 from routes import setup_routes
 
+# conf = load_config(str(pathlib.Path('.') / 'config' / 'config.yaml'))
+# app['config'] = conf
 
 app = web.Application()
 setup_routes(app)
