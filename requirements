@@ -4,3 +4,4 @@ aiodns
 aiohttp-devtools
 pillow
 aiohttp_jinja2
+supervisor
