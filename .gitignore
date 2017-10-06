@@ -99,16 +99,6 @@ ENV/
 
 # mypy
 .mypy_cache/
-.idea/dataSources.local.xml
-.idea/dataSources.xml
-.idea/dataSources/
-.idea/inspectionProfiles/
-.idea/misc.xml
-.idea/modules.xml
-.idea/osm-validator.iml
-.idea/preferred-vcs.xml
-.idea/sqldialects.xml
-.idea/workspace.xml
-jagrmi.py
-nasa.py
+.idea/
+
 

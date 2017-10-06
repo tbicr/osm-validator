@@ -7,26 +7,23 @@ __all__ = ['user', 'area']
 meta = sa.MetaData()
 
 
-question = sa.Table(
+user = sa.Table(
     'user', meta,
     sa.Column('id', sa.Integer, nullable=False),
     sa.Column('user_name', sa.String(200), nullable=False),
 
     # Indexes #
-    sa.PrimaryKeyConstraint('id', name='question_id_pkey'))
+    sa.PrimaryKeyConstraint('id', name='user_name_id_pkey'))
 
-choice = sa.Table(
-    'choice', meta,
+area = sa.Table(
+    'area', meta,
     sa.Column('id', sa.Integer, nullable=False),
-    sa.Column('question_id', sa.Integer, nullable=False),
-    sa.Column('choice_text', sa.String(200), nullable=False),
-    sa.Column('votes', sa.Integer, server_default="0", nullable=False),
+    sa.Column('user_id', sa.Integer, nullable=False),
+    sa.Column('area_text', sa.String(200), nullable=False),
+    sa.Column('user_activity_areas', sa.Integer, server_default="0", nullable=False),
 
     # Indexes #
-    sa.PrimaryKeyConstraint('id', name='choice_id_pkey'),
-    sa.ForeignKeyConstraint(['question_id'], [question.c.id],
-                            name='choice_question_id_fkey',
-                            ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name='area_id_pkey'),
 )
 
 
