@@ -7,3 +7,4 @@ Jinja2==2.9.6
 supervisor
 SQLAlchemy==1.1.14
 aiopg==0.13.1
+alembic==0.9.5

@@ -9,7 +9,7 @@ STATIC_DIR = os.path.join(BASE_DIR, 'static')
 HOST = '127.0.0.1'
 PORT = '8080'
 
-DEBUG = True
+DEBUG = False
 
 logger = logging.getLogger('app')
 logger.setLevel(logging.DEBUG)
@@ -18,8 +18,13 @@ console.setLevel(logging.DEBUG)
 logger.addHandler(console)
 
 DATABASE = {
-    'database': 'belarus_map',
-    'password': 'faust098',
-    'user': 'postgis',
-    'host': 'localhost',
+    'database': '',
+    'password': '',
+    'user': '',
+    'host': '',
 }
+
+try:
+    from settings_local import *
+except ImportError:
+    pass
