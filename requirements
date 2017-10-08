@@ -1,0 +1,10 @@
+aiohttp==2.2.5
+cchardet==2.1.1
+aiodns==1.1.1
+aiohttp-devtools==0.5
+pillow==4.2.1
+Jinja2==2.9.6
+supervisor
+SQLAlchemy==1.1.14
+aiopg==0.13.1
+alembic==0.9.5
