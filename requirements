@@ -8,3 +8,4 @@ supervisor
 SQLAlchemy==1.1.14
 aiopg==0.13.1
 alembic==0.9.5
+psycopg2==2.7.3
