@@ -35,12 +35,12 @@ target_metadata = app['db_declarative_base'].metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-# config.set_main_option('sqlalchemy.url', "postgresql://{}:{}@{}/{}".format(
-#                            DATABASE['user'],
-#                            DATABASE['password'],
-#                            DATABASE['host'],
-#                            DATABASE['database']))
-config.set_main_option('sqlalchemy.url', "postgresql://jagrmi:1989@localhost/faust")
+config.set_main_option('sqlalchemy.url', "postgresql://{}:{}@{}/{}".format(
+                           DATABASE['user'],
+                           DATABASE['password'],
+                           DATABASE['host'],
+                           DATABASE['database']))
+# config.set_main_option('sqlalchemy.url', "postgresql://jagrmi:1989@localhost/faust")
 
 
 def run_migrations_offline():

@@ -6,6 +6,8 @@ from settings import DATABASE
 from sqlalchemy import create_engine
 
 
+postgresql = 'postgresql://{}:{}@{}/{}'.format(DATABASE['user'], DATABASE['password'],
+                                                   DATABASE['host'], DATABASE['database'])
 # declarate mapping
 Base = declarative_base()
 
@@ -24,13 +26,14 @@ class UserOSM(Base):
 
 
 def run():
-    engine = create_engine('postgresql://jagrmi:1989@localhost/faust')
+    # engine = create_engine('postgresql://jagrmi:1989@localhost/faust')
+    engine = create_engine(postgresql)
     metadata = Base.metadata
     metadata.create_all(engine)
     return Base
 
 async def setup(app):
-    engine = create_engine('postgresql://jagrmi:1989@localhost/faust')
+    engine = create_engine(postgresql)
     metadata = Base.metadata
     metadata.create_all(engine)
     app['db_engine'] = engine
