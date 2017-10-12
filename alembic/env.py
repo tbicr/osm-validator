@@ -1,14 +1,16 @@
 from __future__ import with_statement
-from alembic import context
+import sys
 import os
+sys.path.append("../osm-validator/")
+from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
+from main import build_application
+from settings import DATABASE
 
-import sys
+
 dirname = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(dirname, '..')))
-
-import settings, main
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -20,21 +22,25 @@ fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-app = main.app
+# from models import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
+app = build_application()
 target_metadata = app['db_declarative_base'].metadata
+
+# from models import Base, run
+# target_metadata = run().metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-config.set_main_option('sqlalchemy.url', "postgresql://{}:{}@{}/{}".format(
-                           settings.DATABASE['user'],
-                           settings.DATABASE['password'],
-                           settings.DATABASE['host'],
-                           settings.DATABASE['database']))
+# config.set_main_option('sqlalchemy.url', "postgresql://{}:{}@{}/{}".format(
+#                            DATABASE['user'],
+#                            DATABASE['password'],
+#                            DATABASE['host'],
+#                            DATABASE['database']))
+config.set_main_option('sqlalchemy.url', "postgresql://jagrmi:1989@localhost/faust")
 
 
 def run_migrations_offline():

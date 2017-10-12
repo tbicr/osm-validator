@@ -18,12 +18,12 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        'user',
+        'UserOSM',
         sa.Column('osm_uid', sa.Integer, primary_key=True),
         sa.Column('osm_user', sa.String(50), nullable=False),
     )
 
 
 def downgrade():
-    op.drop_table('usser')
+    op.drop_table('UserOSM')
 
