@@ -28,8 +28,8 @@ fileConfig(config.config_file_name)
 app = build_application()
 target_metadata = app['db_declarative_base'].metadata
 
-# from models import Base, run
-# target_metadata = run().metadata
+# from models import Base
+# target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -40,7 +40,6 @@ config.set_main_option('sqlalchemy.url', "postgresql://{}:{}@{}/{}".format(
                            DATABASE['password'],
                            DATABASE['host'],
                            DATABASE['database']))
-# config.set_main_option('sqlalchemy.url', "postgresql://jagrmi:1989@localhost/faust")
 
 
 def run_migrations_offline():
