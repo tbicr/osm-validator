@@ -5,8 +5,8 @@ Revises:
 Create Date: 2017-10-09 01:54:26.674733
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
 # revision identifiers, used by Alembic.
@@ -27,3 +27,5 @@ def upgrade():
 def downgrade():
     op.drop_table('user')
 
+
+# flake8: noqa

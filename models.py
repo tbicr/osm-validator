@@ -1,13 +1,13 @@
-import asyncio
-from sqlalchemy import Table, MetaData, Column, Integer, String, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
 from aiopg.sa import create_engine
+from sqlalchemy import (Column, Integer, String)
+from sqlalchemy.ext.declarative import declarative_base
+
 from settings import DATABASE
-from sqlalchemy import create_engine
 
-
-postgresql = 'postgresql://{}:{}@{}/{}'.format(DATABASE['user'], DATABASE['password'],
-                                               DATABASE['host'], DATABASE['database'])
+postgresql = 'postgresql://{}:{}@{}/{}'.format(DATABASE['user'],
+                                               DATABASE['password'],
+                                               DATABASE['host'],
+                                               DATABASE['database'])
 # Declarate mapping
 Base = declarative_base()
 
@@ -29,4 +29,3 @@ async def setup(app):
     engine = create_engine(postgresql)
     app['db_engine'] = engine
     app['db_declarative_base'] = Base
-

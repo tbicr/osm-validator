@@ -1,11 +1,10 @@
 import argparse
-import sys
 import asyncio
-import models
-import aiohttp_jinja2
-import pathlib
+import sys
 
 from aiohttp import web
+
+import models
 from routes import setup_routes
 
 
@@ -20,6 +19,7 @@ def build_application():
     app = web.Application(loop=loop)
     loop.run_until_complete(models.setup(app))
     return app
+
 
 if __name__ == '__main__':
     app = web.Application()

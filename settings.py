@@ -1,6 +1,5 @@
-import sys
-import os
 import logging
+import os
 
 BASE_DIR = os.path.dirname(__file__)
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
@@ -25,6 +24,6 @@ DATABASE = {
 }
 
 try:
-    from settings_local import *
+    from settings_local import *  # noqa
 except ImportError:
     pass

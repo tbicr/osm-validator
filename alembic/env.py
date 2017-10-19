@@ -1,10 +1,14 @@
 from __future__ import with_statement
-import sys
+
 import os
-sys.path.append("../osm-validator/")
+import sys
+sys.path.append("../osm-validator/")  # noqa
+
+from logging.config import fileConfig
+
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-from logging.config import fileConfig
+
 from main import build_application
 from settings import DATABASE
 
@@ -36,10 +40,10 @@ target_metadata = app['db_declarative_base'].metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 config.set_main_option('sqlalchemy.url', "postgresql://{}:{}@{}/{}".format(
-                           DATABASE['user'],
-                           DATABASE['password'],
-                           DATABASE['host'],
-                           DATABASE['database']))
+    DATABASE['user'],
+    DATABASE['password'],
+    DATABASE['host'],
+    DATABASE['database']))
 
 
 def run_migrations_offline():
@@ -82,6 +86,7 @@ def run_migrations_online():
 
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()
