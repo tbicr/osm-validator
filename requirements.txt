@@ -4,8 +4,11 @@ aiodns==1.1.1
 aiohttp-devtools==0.5
 pillow==4.2.1
 Jinja2==2.9.6
-supervisor
 SQLAlchemy==1.1.14
 aiopg==0.13.1
 alembic==0.9.5
 trafaret==0.12.0
+flake8==3.4.1
+pytest==3.2.3
+pytest-asyncio==0.8.0
+tox==2.9.1
