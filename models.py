@@ -1,5 +1,6 @@
+import aiopg.sa
 from aiopg.sa import create_engine
-from sqlalchemy import (Column, Integer, String)
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from settings import DATABASE
@@ -23,6 +24,20 @@ class User(Base):
 
     def __repr__(self):
         return "<user({},{})>".format(self.osm_uid, self.osm_user)
+
+
+async def init_pg(app):
+    engine = await aiopg.sa.create_engine(
+        database=DATABASE['database'],
+        user=DATABASE['user'],
+        password=DATABASE['password'],
+        host=DATABASE['host'],)
+    app['db'] = engine
+
+
+async def close_pg(app):
+    app['db'].close()
+    await app['db'].wait_closed()
 
 
 async def setup(app):
