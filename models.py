@@ -1,5 +1,6 @@
+import aiopg.sa
 from aiopg.sa import create_engine
-from sqlalchemy import (Column, Integer, String)
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from settings import DATABASE
@@ -29,3 +30,17 @@ async def setup(app):
     engine = create_engine(postgresql)
     app['db_engine'] = engine
     app['db_declarative_base'] = Base
+
+
+async def init_pg(app):
+    engine = await aiopg.sa.create_engine(
+        database=DATABASE['database'],
+        user=DATABASE['user'],
+        password=DATABASE['password'],
+        host=DATABASE['host'],)
+    app['db'] = engine
+
+
+async def close_pg(app):
+    app['db'].close()
+    await app['db'].wait_closed()

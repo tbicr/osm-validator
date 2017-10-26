@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+</head>
+<body>
+<h1>INDEX - template</h1>
+<h2>Example: output variable - {{users}}</h2>
+{% if users %}
+<ul>
+    {% for user in users %}
+    <li><a href="">{{ user.osm_user }}</a>
+        {{user}}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+</body>
+</html>
