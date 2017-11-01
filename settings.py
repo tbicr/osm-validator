@@ -23,6 +23,9 @@ DATABASE = {
     'host': '',
 }
 
+AUTH_OPENSTREETMAP_KEY = ''
+AUTH_OPENSTREETMAP_SECRET = ''
+
 try:
     from settings_local import *  # noqa
 except ImportError:
