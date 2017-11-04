@@ -1,5 +1,5 @@
 from aiopg.sa import create_engine
-from sqlalchemy import (Column, Integer, String)
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from settings import DATABASE
@@ -18,8 +18,9 @@ class User(Base):
     osm_uid = Column(Integer, primary_key=True)
     osm_user = Column(String(50))
 
-    def __init__(self, text):
-        self.text = text
+    def __init__(self, osm_uid, osm_user):
+        self.osm_uid = osm_uid
+        self.osm_user = osm_user
 
     def __repr__(self):
         return "<user({},{})>".format(self.osm_uid, self.osm_user)

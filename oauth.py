@@ -1,7 +1,6 @@
-from lxml import etree
-
 from aioauth_client import OAuth1Client
 from aiohttp import web
+from lxml import etree
 
 import settings
 
@@ -20,17 +19,22 @@ class OSMOauthClient(OAuth1Client):
     user_info_url = 'http://api.openstreetmap.org/api/0.6/user/details.json'
 
     def __init__(self, **kwargs):
-        super().__init__(settings.AUTH_OPENSTREETMAP_KEY, settings.AUTH_OPENSTREETMAP_SECRET, **kwargs)
+        super().__init__(settings.AUTH_OPENSTREETMAP_KEY,
+                         settings.AUTH_OPENSTREETMAP_SECRET,
+                         **kwargs)
 
     async def user_info(self, loop=None, **kwargs):
         """Load user information from provider."""
         if not self.user_info_url:
-            raise NotImplementedError('The provider doesnt support user_info method.')
+            raise NotImplementedError('The provider doesnt '
+                                      'support user_info method.')
 
-        response = await self.request('GET', self.user_info_url, loop=loop, **kwargs)
+        response = await self.request('GET', self.user_info_url,
+                                      loop=loop, **kwargs)
         if response.status / 100 > 2:
-            raise web.HTTPBadRequest(reason='Failed to obtain User information. '
-                                     'HTTP status code: %s' % response.status)
+            raise web.HTTPBadRequest(reason='Failed to obtain User '
+                                            'information. HTTP status '
+                                            'code: %s' % response.status)
         data = await response.read()
         user = dict(self.user_parse(data))
         return user, data
