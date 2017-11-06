@@ -1,9 +1,6 @@
-from lxml import etree
-
 from aioauth_client import OAuth1Client
 from aiohttp import web
-
-import settings
+from lxml import etree
 
 
 class OSMOauthClient(OAuth1Client):
@@ -14,13 +11,10 @@ class OSMOauthClient(OAuth1Client):
     """
 
     name = 'openstreetmap'
-    request_token_url = 'http://www.openstreetmap.org/oauth/request_token'
-    access_token_url = 'http://www.openstreetmap.org/oauth/access_token'
-    authorize_url = 'http://www.openstreetmap.org/oauth/authorize'
-    user_info_url = 'http://api.openstreetmap.org/api/0.6/user/details.json'
-
-    def __init__(self, **kwargs):
-        super().__init__(settings.AUTH_OPENSTREETMAP_KEY, settings.AUTH_OPENSTREETMAP_SECRET, **kwargs)
+    request_token_url = 'https://www.openstreetmap.org/oauth/request_token'
+    access_token_url = 'https://www.openstreetmap.org/oauth/access_token'
+    authorize_url = 'https://www.openstreetmap.org/oauth/authorize'
+    user_info_url = 'https://api.openstreetmap.org/api/0.6/user/details'
 
     async def user_info(self, loop=None, **kwargs):
         """Load user information from provider."""
@@ -29,8 +23,9 @@ class OSMOauthClient(OAuth1Client):
 
         response = await self.request('GET', self.user_info_url, loop=loop, **kwargs)
         if response.status / 100 > 2:
-            raise web.HTTPBadRequest(reason='Failed to obtain User information. '
-                                     'HTTP status code: %s' % response.status)
+            raise web.HTTPBadRequest(
+                reason='Failed to obtain User information. HTTP status code: %s' %
+                       response.status)
         data = await response.read()
         user = dict(self.user_parse(data))
         return user, data
@@ -39,5 +34,5 @@ class OSMOauthClient(OAuth1Client):
     def user_parse(data):
         root = etree.fromstring(data)
         user = root[0]
-        yield 'osm_uid', user.attrib['id']
+        yield 'osm_uid', int(user.attrib['id'])
         yield 'osm_user', user.attrib['display_name']

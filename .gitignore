@@ -98,5 +98,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# osm-validator
 .idea/
-/settings_local.py
+osm_validator/settings_local.py

@@ -1,20 +1,16 @@
-from __future__ import with_statement
-
+import asyncio
 import os
 import sys
-sys.path.append("../osm-validator/")  # noqa
-
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from main import build_application
-from settings import DATABASE
-
-
 dirname = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(dirname, '..')))
+
+from osm_validator.app import build_application  # isort:skip  # noqa
+from osm_validator.settings import DATABASE  # isort:skip  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -29,11 +25,9 @@ fileConfig(config.config_file_name)
 # from models import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-app = build_application()
-target_metadata = app['db_declarative_base'].metadata
-
-# from models import Base
-# target_metadata = Base.metadata
+loop = asyncio.get_event_loop()
+app = loop.run_until_complete(build_application())
+target_metadata = app.db.Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
