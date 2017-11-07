@@ -8,12 +8,12 @@ OSM validator
 
 # Run tests
 
-    source .env.test && tox
+    export $(cat .env.test | xargs) && tox
 
 # Migrate
 
-    source .env && alembic upgrade head
+    export $(cat .env | xargs) && alembic upgrade head
 
 # Run server
 
-    source .env && python main.py
+    export $(cat .env | xargs) && python main.py
