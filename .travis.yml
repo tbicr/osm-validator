@@ -1,0 +1,17 @@
+language: python
+python:
+  - "3.6"
+
+services:
+  - postgresql
+  - redis-server
+
+install:
+  - pip install tox
+
+before_script:
+  - psql -c "CREATE DATABASE osmvalidatortest;" -U postgres
+  - psql -c "CREATE USER test WITH PASSWORD 'test';" -U postgres
+
+script:
+  - export $(cat .env.test | xargs) && tox

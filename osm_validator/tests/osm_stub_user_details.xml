@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="OpenStreetMap server">
+  <user id="278800" display_name="Карыстальнік" account_created="2010-04-30T08:34:22Z">
+    <description></description>
+    <contributor-terms agreed="true" pd="true"/>
+    <img href="http://www.openstreetmap.org/assets/users/images/large-afe7442b856c223cca92b1a16d96a3266ec0c86cac8031269e90ef93562adb72.png"/>
+    <roles>
+    </roles>
+    <changesets count="1733"/>
+    <traces count="68"/>
+    <blocks>
+      <received count="0" active="0"/>
+    </blocks>
+    <home lat="53.92874" lon="27.69891" zoom="3"/>
+    <languages>
+      <lang>en</lang>
+      <lang>be</lang>
+      <lang>ru</lang>
+    </languages>
+    <messages>
+      <received count="13" unread="0"/>
+      <sent count="21"/>
+    </messages>
+  </user>
+</osm>

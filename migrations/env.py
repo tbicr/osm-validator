@@ -1,16 +1,16 @@
-from __future__ import with_statement
-import sys
+import asyncio
 import os
-sys.path.append("../osm-validator/")
+import sys
+from logging.config import fileConfig
+
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-from logging.config import fileConfig
-from main import build_application
-from settings import DATABASE
-
 
 dirname = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(dirname, '..')))
+
+from osm_validator.app import build_application  # isort:skip  # noqa
+from osm_validator.settings import DATABASE  # isort:skip  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -25,21 +25,19 @@ fileConfig(config.config_file_name)
 # from models import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-app = build_application()
-target_metadata = app['db_declarative_base'].metadata
-
-# from models import Base
-# target_metadata = Base.metadata
+loop = asyncio.get_event_loop()
+app = loop.run_until_complete(build_application())
+target_metadata = app.db.Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 config.set_main_option('sqlalchemy.url', "postgresql://{}:{}@{}/{}".format(
-                           DATABASE['user'],
-                           DATABASE['password'],
-                           DATABASE['host'],
-                           DATABASE['database']))
+    DATABASE['user'],
+    DATABASE['password'],
+    DATABASE['host'],
+    DATABASE['database']))
 
 
 def run_migrations_offline():
@@ -82,6 +80,7 @@ def run_migrations_online():
 
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()
