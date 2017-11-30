@@ -1,4 +1,7 @@
+import time
+
 from aiohttp import web
+from aiohttp_session import get_session
 from psycopg2._psycopg import IntegrityError
 
 from . import models
@@ -6,6 +9,13 @@ from .oauth import OSMOauthClient
 
 
 async def index(request):
+    sesion = await get_session(request=request)
+    user_uid = sesion.get('message')
+    user = sesion['user'] if 'user' in sesion else None
+    if user:
+        if request.headers['Cookie']:
+            return web.Response(text='Hello: {} - {}'.format(user, user_uid))
+        return web.Response(text='No header Cookie')
     async with request.app.db.acquire() as conn:
         records = await conn.scalar(models.User.__table__.count())
     return web.Response(text='Users: {}'.format(records))
@@ -24,6 +34,8 @@ async def oauth_login(request):
 
 
 async def oauth_complete(request):
+    session = await get_session(request=request)
+
     request_token = request.GET['oauth_token']
     request_token_secret = await request.app.redis.oauth.get(request_token)
     if request_token_secret is None:
@@ -49,4 +61,31 @@ async def oauth_complete(request):
             await conn.execute(models.User.__table__.update().
                                where(models.User.__table__.c.osm_uid == user['osm_uid']).
                                values(**user))
+
+    await request.app.redis.oauth.set(
+        'user',
+        user['osm_uid'],
+        expire=request.app.config.OAUTH_CACHE_EXPIRE)
+
+    session['user'] = user['osm_user']
+    session['message'] = user['osm_uid']
     return web.HTTPFound(request.app.router['index'].url_for())
+
+
+async def sign_out(request):
+    session = await get_session(request=request)
+    if session.get('user'):
+        del session['user']
+    url = request.app.router['index'].url_for()
+    return web.HTTPFound(url)
+
+
+async def test(request):
+    session = await get_session(request=request)
+    session['last visit'] = time.time()
+    if session.get('user'):
+        text = 'This is information about User: {}. Last visit - {}'.format(
+            session.get('user'), session.get('last visit'))
+    else:
+        text = 'This will be information about User.'
+    return web.Response(text=text)
