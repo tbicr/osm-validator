@@ -111,17 +111,19 @@ async def test_loggined_user__ok(app, client, mocker):
     assert user.osm_uid == 1
     assert user.osm_user == 'test 2'
 
-    url = app.router['test'].url_for()
+    url = app.router['index'].url_for()
     response = await client.get(url)
 
     assert response.status == 200
-    assert 'This is information about User: {}. ' \
-           'Last visit -'.format(user.osm_user) in await response.text()
+    assert str(user.osm_uid) in await response.text()
+
+    async with app.db.acquire() as conn:
+        await conn.execute(User.__table__.delete())
 
 
 async def test_unloaginneed_user__ok(app, client):
-    url = app.router['test'].url_for()
+    url = app.router['index'].url_for()
     response = await client.get(url)
 
     assert response.status == 200
-    assert await response.text() == 'This will be information about User.'
+    assert 'Users: 0' in await response.text()

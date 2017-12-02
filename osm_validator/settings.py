@@ -1,3 +1,4 @@
+import base64
 import logging
 import os
 
@@ -28,6 +29,7 @@ REDIS = {
 OAUTH_OPENSTREETMAP_KEY = os.environ['OAUTH_OPENSTREETMAP_KEY']
 OAUTH_OPENSTREETMAP_SECRET = os.environ['OAUTH_OPENSTREETMAP_SECRET']
 OAUTH_CACHE_EXPIRE = 3600
+SECRET_KEY = base64.urlsafe_b64decode(os.environ['SECRET_KEY'])
 
 try:
     from .settings_local import *  # noqa

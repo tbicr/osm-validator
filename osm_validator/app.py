@@ -1,11 +1,18 @@
-import base64
-
 from aiohttp import web
-from aiohttp_session import setup
+from aiohttp.web import middleware
+from aiohttp_session import get_session, setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
-from cryptography.fernet import Fernet
 
 from . import models, redis, routes, settings
+
+
+@middleware
+async def middleware_1(request, handler):
+    session = await get_session(request=request)
+    user_id = session['user_id'] if 'user_id' in session else None
+    request.user = user_id
+    response = await handler(request)
+    return response
 
 
 async def close_redis(app):
@@ -16,9 +23,8 @@ async def close_redis(app):
 async def build_application():
     app = web.Application()
 
-    fernet_key = Fernet.generate_key()
-    secret_key = base64.urlsafe_b64decode(fernet_key)
-    setup(app=app, storage=EncryptedCookieStorage(secret_key=secret_key))
+    setup(app=app, storage=EncryptedCookieStorage(secret_key=settings.SECRET_KEY))
+    app.middlewares.append(middleware_1)
 
     app.config = settings
 
