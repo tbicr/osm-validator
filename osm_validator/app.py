@@ -7,7 +7,7 @@ from . import models, redis, routes, settings
 
 
 @middleware
-async def middleware_1(request, handler):
+async def user_middleware(request, handler):
     session = await get_session(request=request)
     user_id = session['user_id'] if 'user_id' in session else None
     request.user = user_id
@@ -24,7 +24,7 @@ async def build_application():
     app = web.Application()
 
     setup(app=app, storage=EncryptedCookieStorage(secret_key=settings.SECRET_KEY))
-    app.middlewares.append(middleware_1)
+    app.middlewares.append(user_middleware)
 
     app.config = settings
 

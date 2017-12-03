@@ -64,3 +64,11 @@ async def sign_out(request):
         del session['user_id']
     url = request.app.router['index'].url_for()
     return web.HTTPFound(url)
+
+
+async def test(request):
+    if request.user:
+        text = 'This is information about USER - {}'.format(request.user)
+    else:
+        text = 'This will be information about USER'
+    return web.Response(text=text)
