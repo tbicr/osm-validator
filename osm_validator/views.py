@@ -7,9 +7,9 @@ from .oauth import OSMOauthClient
 
 
 async def index(request):
-    async with request.app.db.acquire() as conn:
-        records = await conn.scalar(models.User.__table__.count())
-    return web.Response(text='{}. Users: {}.'.format(request.user, records))
+    if not request.user:
+        return web.Response(text='Login required.')
+    return web.Response(text=request.user.osm_user)
 
 
 async def oauth_login(request):
@@ -64,11 +64,3 @@ async def sign_out(request):
         del session['user_id']
     url = request.app.router['index'].url_for()
     return web.HTTPFound(url)
-
-
-async def test(request):
-    if request.user:
-        text = 'This is information about USER - {}'.format(request.user)
-    else:
-        text = 'This will be information about USER'
-    return web.Response(text=text)

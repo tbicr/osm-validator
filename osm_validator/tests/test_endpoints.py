@@ -1,5 +1,5 @@
-import base64
 import json
+import time
 
 from cryptography.fernet import Fernet
 
@@ -7,23 +7,15 @@ from osm_validator.models import User
 
 
 def make_cookie(client, fernet, data):
-    fernet_key = base64.urlsafe_b64encode(fernet)
-    fernet_obj = Fernet(fernet_key)
+    session_data = {
+        'session': data,
+        'created': int(time.time())
+    }
 
-    cookie_data = json.dumps(data).encode('utf-8')
-    cookie_value = fernet_obj.encrypt(cookie_data).decode('utf-8')
-    assert '=' in cookie_value
-    client.session.cookie_jar.update_cookies({'AIOHTTP_SESSION': cookie_value})
+    cookie_data = json.dumps(session_data).encode('utf-8')
+    data = fernet.encrypt(cookie_data).decode('utf-8')
 
-
-def decrypt(fernet, cookie_value):
-    fernet_key = base64.urlsafe_b64encode(fernet)
-    fernet_obj = Fernet(fernet_key)
-
-    assert type(cookie_value) == str
-    return json.loads(
-        fernet_obj.decrypt(cookie_value.encode('utf-8')).decode('utf-8')
-    )
+    client.session.cookie_jar.update_cookies({'AIOHTTP_SESSION': data})
 
 
 async def test_oauth_new_user__ok(app, client, mocker):
@@ -105,30 +97,23 @@ async def test_oauth_old_user__ok(app, client, mocker):
         await conn.execute(User.__table__.delete())
 
 
-async def test_loggined_user__ok(app, client, mocker):
-    url = app.router['test'].url_for()
-
-    # Create record in database
+async def test_loggined_user__ok(app, client):
     async with app.db.acquire() as conn:
         await conn.execute(User.__table__.insert().values({
             'osm_uid': 1,
             'osm_user': 'user',
         }))
+        user = User(**await (await conn.execute(User.__table__.select())).fetchone())
 
-    make_cookie(client, app.config.SECRET_KEY, {'user': 1})
-    mocker(client, app.config.SECRET_KEY, {'user': 1})
-
+    url = app.router['index'].url_for()
+    make_cookie(client, Fernet(app.config.SECRET_KEY), {'user_id': 1})
     response = await client.get(url)
 
-    # Get a record from database
-    async with app.db.acquire() as conn:
-        user = User(**await (await conn.execute(User.__table__.select())).fetchone())
-    # Delete a record from database
+    assert response.status == 200
+    assert await response.text() == user.osm_user
+
     async with app.db.acquire() as conn:
         await conn.execute(User.__table__.delete())
-
-    assert response.status == 200
-    assert await response.text() == 'This is information about USER - {}'.format(user.osm_uid)
 
 
 async def test_unloaginneed_user__ok(app, client):
@@ -136,4 +121,4 @@ async def test_unloaginneed_user__ok(app, client):
     response = await client.get(url)
 
     assert response.status == 200
-    assert 'Users: 0' in await response.text()
+    assert await response.text() == 'Login required.'

@@ -1,3 +1,5 @@
+import base64
+
 from aiohttp import web
 from aiohttp.web import middleware
 from aiohttp_session import get_session, setup
@@ -9,8 +11,13 @@ from . import models, redis, routes, settings
 @middleware
 async def user_middleware(request, handler):
     session = await get_session(request=request)
-    user_id = session['user_id'] if 'user_id' in session else None
-    request.user = user_id
+    request.user = None
+    if 'user_id' in session:
+        user_id = session['user_id']
+        async with request.app.db.acquire() as conn:
+            request.user = models.User(**await (await conn.execute(
+                models.User.__table__.select().where(models.User.__table__.c.osm_uid == user_id))
+            ).fetchone())
     response = await handler(request)
     return response
 
@@ -23,7 +30,8 @@ async def close_redis(app):
 async def build_application():
     app = web.Application()
 
-    setup(app=app, storage=EncryptedCookieStorage(secret_key=settings.SECRET_KEY))
+    setup(app=app, storage=EncryptedCookieStorage(
+        secret_key=base64.urlsafe_b64decode(settings.SECRET_KEY)))
     app.middlewares.append(user_middleware)
 
     app.config = settings
