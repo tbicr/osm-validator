@@ -1,4 +1,21 @@
+import json
+import time
+
+from cryptography.fernet import Fernet
+
 from osm_validator.models import User
+
+
+def make_cookie(client, fernet, data):
+    session_data = {
+        'session': data,
+        'created': int(time.time())
+    }
+
+    cookie_data = json.dumps(session_data).encode('utf-8')
+    data = fernet.encrypt(cookie_data).decode('utf-8')
+
+    client.session.cookie_jar.update_cookies({'AIOHTTP_SESSION': data})
 
 
 async def test_oauth_new_user__ok(app, client, mocker):
@@ -78,3 +95,30 @@ async def test_oauth_old_user__ok(app, client, mocker):
 
     async with app.db.acquire() as conn:
         await conn.execute(User.__table__.delete())
+
+
+async def test_loggined_user__ok(app, client):
+    async with app.db.acquire() as conn:
+        await conn.execute(User.__table__.insert().values({
+            'osm_uid': 1,
+            'osm_user': 'user',
+        }))
+        user = User(**await (await conn.execute(User.__table__.select())).fetchone())
+
+    url = app.router['index'].url_for()
+    make_cookie(client, Fernet(app.config.SECRET_KEY), {'user_id': 1})
+    response = await client.get(url)
+
+    assert response.status == 200
+    assert await response.text() == user.osm_user
+
+    async with app.db.acquire() as conn:
+        await conn.execute(User.__table__.delete())
+
+
+async def test_unloaginneed_user__ok(app, client):
+    url = app.router['index'].url_for()
+    response = await client.get(url)
+
+    assert response.status == 200
+    assert await response.text() == 'Login required.'

@@ -13,6 +13,8 @@ console = logging.StreamHandler()
 console.setLevel(logging.DEBUG)
 logger.addHandler(console)
 
+SECRET_KEY = os.environ['SECRET_KEY']
+
 DATABASE = {
     'database': os.environ['PG_DATABASE'],
     'password': os.environ['PG_PASSWORD'],
