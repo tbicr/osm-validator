@@ -7,9 +7,7 @@ from .oauth import OSMOauthClient
 
 
 async def index(request):
-    if not request.user:
-        return web.Response(text='Login required.')
-    return web.Response(text=request.user.osm_user)
+    return web.FileResponse('./static/index.html')
 
 
 async def oauth_login(request):
@@ -64,3 +62,12 @@ async def sign_out(request):
         del session['user_id']
     url = request.app.router['index'].url_for()
     return web.HTTPFound(url)
+
+
+async def user_info(request):
+    if request.user:
+        user = {'osm_user': request.user.osm_user}
+        return web.json_response(user, status=200)
+    else:
+        user = {'osm_user': 'undefined'}
+        return web.json_response(user, status=400)

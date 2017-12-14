@@ -102,3 +102,12 @@ ENV/
 # osm-validator
 .idea/
 osm_validator/settings_local.py
+
+# osm-validator
+node_modules/
+
+# envfile plugin
+..env.test.swp
+
+# compiled jsx files
+static/js/app_bundle.js

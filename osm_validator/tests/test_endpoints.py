@@ -104,17 +104,17 @@ async def test_loggined_user__ok(app, client):
         }))
         user = User(**await (await conn.execute(User.__table__.select())).fetchone())
 
-    url = app.router['index'].url_for()
+    url = app.router['user:info'].url_for()
     make_cookie(client, Fernet(app.config.SECRET_KEY), {'user_id': 1})
     response = await client.get(url)
 
     assert response.status == 200
-    assert await response.text() == user.osm_user
+    assert await response.json() == {'osm_user': user.osm_user}
 
 
 async def test_unloaginneed_user__ok(app, client):
-    url = app.router['index'].url_for()
+    url = app.router['user:info'].url_for()
     response = await client.get(url)
 
-    assert response.status == 200
-    assert await response.text() == 'Login required.'
+    assert response.status == 400
+    assert await response.json() == {'osm_user': 'undefined'}
