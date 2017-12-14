@@ -8,6 +8,16 @@ OSM validator
 - osm2pgsql
 - osmconvert (osmctools)
 
+# Install front dependencies
+
+    npm install
+
+# Build front application
+
+    node_modules/.bin/webpack
+
+# Add OAUTH_OPENSTREETMAP_KEY && OAUTH_OPENSTREETMAP_SECRET at .env
+
 # Run tests
 
     export $(cat .env.test | xargs) && tox
