@@ -19,6 +19,9 @@ def make_cookie(client, fernet, data):
 
 
 async def test_oauth_new_user__ok(app, client, mocker):
+    async with app.db.acquire() as conn:
+        await conn.execute(User.__table__.delete())
+
     async def get_request_token():
         return 'REQUEST_TOKEN', 'REQUEST_SECRET', None
 
@@ -52,12 +55,10 @@ async def test_oauth_new_user__ok(app, client, mocker):
     assert user.osm_uid == 1
     assert user.osm_user == 'test'
 
-    async with app.db.acquire() as conn:
-        await conn.execute(User.__table__.delete())
-
 
 async def test_oauth_old_user__ok(app, client, mocker):
     async with app.db.acquire() as conn:
+        await conn.execute(User.__table__.delete())
         await conn.execute(User.__table__.insert().values({
             'osm_uid': 1,
             'osm_user': 'test',
@@ -93,12 +94,10 @@ async def test_oauth_old_user__ok(app, client, mocker):
     assert user.osm_uid == 1
     assert user.osm_user == 'test 2'
 
-    async with app.db.acquire() as conn:
-        await conn.execute(User.__table__.delete())
-
 
 async def test_loggined_user__ok(app, client):
     async with app.db.acquire() as conn:
+        await conn.execute(User.__table__.delete())
         await conn.execute(User.__table__.insert().values({
             'osm_uid': 1,
             'osm_user': 'user',
@@ -111,9 +110,6 @@ async def test_loggined_user__ok(app, client):
 
     assert response.status == 200
     assert await response.text() == user.osm_user
-
-    async with app.db.acquire() as conn:
-        await conn.execute(User.__table__.delete())
 
 
 async def test_unloaginneed_user__ok(app, client):
