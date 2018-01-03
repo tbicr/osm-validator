@@ -29,6 +29,10 @@ OSM validator
 
     export $(cat .env | xargs) && alembic upgrade head
 
-# Run server
+# Run validators
+
+    export $(cat .env | xargs) && python schedule.py
+
+# Run web server
 
     export $(cat .env | xargs) && python main.py
