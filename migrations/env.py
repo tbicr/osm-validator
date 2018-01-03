@@ -40,6 +40,20 @@ config.set_main_option('sqlalchemy.url', "postgresql://{}:{}@{}/{}".format(
     DATABASE['database']))
 
 
+def exclude_tables_from_config(config):
+    tables = config.get('tables', [])
+    if tables:
+        tables = tables.split(',')
+    return tables
+
+
+exclude_tables = exclude_tables_from_config(config.get_section('alembic:exclude'))
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    return name not in exclude_tables
+
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
@@ -52,9 +66,12 @@ def run_migrations_offline():
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True)
+        url=config.get_main_option('sqlalchemy.url'),
+        target_metadata=target_metadata,
+        include_object=include_object,
+        literal_binds=True,
+        transaction_per_migration=True)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -75,8 +92,9 @@ def run_migrations_online():
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=target_metadata
-        )
+            target_metadata=target_metadata,
+            include_object=include_object,
+            transaction_per_migration=True)
 
         with context.begin_transaction():
             context.run_migrations()
