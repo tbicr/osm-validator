@@ -7,16 +7,7 @@ OSM validator
 - redis
 - osm2pgsql
 - osmconvert (osmctools)
-
-# Install front dependencies
-
-    npm install
-
-# Build front application
-
-    node_modules/.bin/webpack
-
-# Add OAUTH_OPENSTREETMAP_KEY && OAUTH_OPENSTREETMAP_SECRET at .env
+- node
 
 # Run tests
 
@@ -28,12 +19,24 @@ OSM validator
 - Generate `SECRET_KEY` (`cryptography.fernet.Fernet.generate_key()`)
 - Set postgres db connection
 - Set redis connection
-- Set openstreetmap OAuth credentials (https://wiki.openstreetmap.org/wiki/OAuth)
+- Set openstreetmap OAuth credentials (https://wiki.openstreetmap.org/wiki/OAuth):
+
+      OAUTH_OPENSTREETMAP_KEY=Consumer Key there
+      OAUTH_OPENSTREETMAP_SECRET=Consumer Secret there
+
 - Set osm initialization dumps:
 
       OSM_INIT_PBF=http://download.geofabrik.de/europe/belarus-180101.osm.pbf
       OSM_INIT_SEQUENCE_NUMBER=1749
       OSM_CHANGE=http://download.geofabrik.de/europe/belarus-updates/
+
+# Install front dependencies
+
+    npm install
+
+# Build front application
+
+    node_modules/.bin/webpack
 
 # Migrate
 
