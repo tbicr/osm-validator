@@ -6,6 +6,25 @@ from . import models
 from .oauth import OSMOauthClient
 
 
+def login_required(fn):
+    """
+    auth decorator
+    call function
+    """
+    async def wrapped(request, **kwargs):
+        session = await get_session(request)
+        user = None
+        if 'user_id' in session:
+            user_id = session['user_id']
+            async with request.app.db.acquire() as conn:
+                user = models.User(**await (await conn.execute(
+                    models.User.__table__.select().where(
+                        models.User.__table__.c.osm_uid == user_id))
+                ).fetchone())
+        return await fn(request, user, **kwargs)
+    return wrapped
+
+
 async def index(request):
     return web.FileResponse('./static/index.html')
 
@@ -64,10 +83,11 @@ async def sign_out(request):
     return web.HTTPFound(url)
 
 
-async def user_info(request):
-    if request.user:
-        user = {'osm_user': request.user.osm_user}
-        return web.json_response(user, status=200)
+@login_required
+async def user_info(request, user):
+    if user:
+        user_dict = {'osm_user': user.osm_user}
+        return web.json_response(user_dict, status=200)
     else:
-        user = {'osm_user': 'undefined'}
-        return web.json_response(user, status=400)
+        user_dict = {'osm_user': 'undefined'}
+        return web.json_response(user_dict, status=400)
