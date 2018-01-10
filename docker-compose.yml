@@ -1,0 +1,52 @@
+version: "3"
+
+services:
+  postgres:
+    container_name: postgres-stubb
+    restart: always
+    image: postgres:9.6
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - 5432
+  redis:
+    container_name: redis-stubb
+    restart: always
+    image: redis
+    env_file:
+      - .env
+    ports:
+      - 6379
+  web:
+    container_name: web-stubb
+    restart: always
+    image: osmvalidator/web
+    build: ./dockers/web/
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "0.0.0.0:8080:8080"
+    links:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    command: []
+  scheduler:
+    container_name: scheduler-stubb
+    image: osmvalidator/scheduler
+    build: ./dockers/scheduler/
+    volumes:
+      - .:/usr/src/app
+    env_file:
+     - .env
+#    command: "pipenv install --system && tset"
+    links:
+      - postgres
+    depends_on:
+      - postgres
+volumes:
+  db-data:
