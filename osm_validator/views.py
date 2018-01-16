@@ -25,7 +25,7 @@ def login_required(func):
                 ).fetchone())
         else:
             raise web.HTTPUnauthorized
-        return await fn(request, **kwargs)
+        return await func(request, **kwargs)
     return wrapped
 
 
