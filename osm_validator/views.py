@@ -1,7 +1,8 @@
+from functools import wraps
+
 from aiohttp import web
 from aiohttp_session import get_session
 from psycopg2._psycopg import IntegrityError
-from functools import wraps
 
 from . import models
 from .oauth import OSMOauthClient
@@ -89,9 +90,5 @@ async def sign_out(request):
 
 @login_required
 async def user_info(request):
-    if request.user:
-        user = {'osm_user': request.user.osm_user}
-        return web.json_response(user, status=200)
-    else:
-        user = {'osm_user': 'undefined'}
-        return web.json_response(user, status=400)
+    user = {'osm_user': request.user.osm_user}
+    return web.json_response(user, status=200)
