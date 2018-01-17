@@ -116,5 +116,5 @@ async def test_unloaginneed_user__ok(app, client):
     url = app.router['user:info'].url_for()
     response = await client.get(url)
 
-    assert response.status == 400
-    assert await response.json() == {'osm_user': 'undefined'}
+    assert response.status == 401
+    assert await response.text() == '401: Unauthorized'
