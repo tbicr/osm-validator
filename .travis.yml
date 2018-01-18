@@ -17,6 +17,7 @@ services:
 install:
   - pip install tox
   - npm install
+  - pip install pipenv
 
 before_script:
   - psql -U postgres -c "CREATE DATABASE osmvalidatortest;"
@@ -26,5 +27,5 @@ before_script:
 
 
 script:
-  - export $(cat .env.test | xargs) && tox
-  - ./node_modules/.bin/eslint --config ./.eslintrc 'osm_validator_front/js/**'
+  - export $(cat .env.test | xargs) && pipenv run tox
+  - pipenv run ./node_modules/.bin/eslint --config ./.eslintrc 'osm_validator_front/js/**'

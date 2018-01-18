@@ -11,7 +11,7 @@ OSM validator
 
 # Run tests
 
-    export $(cat .env.test | xargs) && tox
+    export $(cat .env.test | xargs) && pipenv run tox
 
 # Configure
 
@@ -32,20 +32,20 @@ OSM validator
 
 # Install front dependencies
 
-    npm install
+    pipenv run npm install
 
 # Build front application
 
-    node_modules/.bin/webpack
+    pipenv run node_modules/.bin/webpack
 
 # Migrate
 
-    export $(cat .env | xargs) && alembic upgrade head
+    export $(cat .env | xargs) && pipenv run alembic upgrade head
 
 # Run validators
 
-    export $(cat .env | xargs) && python schedule.py
+    export $(cat .env | xargs) && pipenv run python schedule.py
 
 # Run web server
 
-    export $(cat .env | xargs) && python main.py
+    export $(cat .env | xargs) && pipenv run python main.py
