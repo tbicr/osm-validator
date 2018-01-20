@@ -16,6 +16,7 @@ services:
 
 install:
   - pip install tox
+  - pip install pipfile
   - npm install
 
 before_script:
