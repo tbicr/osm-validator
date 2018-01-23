@@ -1,9 +1,33 @@
+from functools import wraps
+
 from aiohttp import web
 from aiohttp_session import get_session
 from psycopg2._psycopg import IntegrityError
 
 from . import models
 from .oauth import OSMOauthClient
+
+
+def login_required(func):
+    """
+    auth decorator
+    call function
+    """
+    @wraps(func)
+    async def wrapped(request, **kwargs):
+        session = await get_session(request)
+        request.user = None
+        if 'user_id' in session:
+            user_id = session['user_id']
+            async with request.app.db.acquire() as conn:
+                request.user = models.User(**await (await conn.execute(
+                    models.User.__table__.select().where(
+                        models.User.__table__.c.osm_uid == user_id))
+                ).fetchone())
+        else:
+            raise web.HTTPUnauthorized
+        return await func(request, **kwargs)
+    return wrapped
 
 
 async def index(request):
@@ -64,10 +88,7 @@ async def sign_out(request):
     return web.HTTPFound(url)
 
 
+@login_required
 async def user_info(request):
-    if request.user:
-        user = {'osm_user': request.user.osm_user}
-        return web.json_response(user, status=200)
-    else:
-        user = {'osm_user': 'undefined'}
-        return web.json_response(user, status=400)
+    user = {'osm_user': request.user.osm_user}
+    return web.json_response(user, status=200)
