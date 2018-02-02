@@ -1,0 +1,44 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[requires]
+python_version = '3.6'
+
+[dev-packages]
+
+aioresponses = "==0.3.0"
+"flake8" = "*"
+isort = "*"
+pytest = "*"
+pytest-aiohttp = "*"
+pytest-asyncio = "*"
+pytest-mock = "*"
+tox = "*"
+
+
+[packages]
+
+aioauth-client = "*"
+aiodns = "*"
+aiohttp = "*"
+aiohttp-devtools = "*"
+"aiohttp_jinja2" = "*"
+aiohttp_session = "*"
+aiopg = "*"
+aioredis = "*"
+alembic = "*"
+cchardet = "*"
+cryptography = "*"
+"GeoAlchemy2" = "*"
+hiredis = "*"
+"Jinja2" = "*"
+lxml = "*"
+Pillow = "*"
+SQLAlchemy = "*"
+Shapely = "*"
+requests = "*"
+trafaret = "*"
