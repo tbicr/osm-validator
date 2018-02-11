@@ -1,20 +1,7 @@
 # osm-validator
 OSM validator
 
-# Requirements
-- python 3.6
-- postgres + postgis + hstore
-- redis
-- osm2pgsql
-- osmconvert (osmctools)
-- node
-
-# Run tests
-
-    export $(cat .env.test | xargs) && tox
-
 # Configure
-
 - Create `.env` file
 - Generate `SECRET_KEY` (`cryptography.fernet.Fernet.generate_key()`)
 - Set postgres db connection
@@ -29,23 +16,47 @@ OSM validator
       OSM_INIT_PBF=http://download.geofabrik.de/europe/belarus-180101.osm.pbf
       OSM_INIT_SEQUENCE_NUMBER=1749
       OSM_CHANGE=http://download.geofabrik.de/europe/belarus-updates/
+      OSM_CHECK_TIMEOUT=3600
 
-# Install front dependencies
+# Production deploy
+Deploy cover database initiation, initial migration, services running.
+
+*NOTE: first run can take some time for initialization*
+
+    git clone git@github.com:tbicr/osm-validator.git
+    cd osm-validator
+    # setup .env file with Configure section
+    export $(cat .env | xargs) && docker-compose up -d
+
+# Development
+## Requirements
+- python 3.6
+- postgres + postgis + hstore
+- redis
+- osm2pgsql
+- osmconvert (osmctools)
+- nodejs
+
+## Run tests
+
+    export $(cat .env.test | xargs) && tox
+
+## Install front dependencies
 
     npm install
 
-# Build front application
+## Build front application
 
     node_modules/.bin/webpack
 
-# Migrate
+## Migrate
 
     export $(cat .env | xargs) && alembic upgrade head
 
-# Run validators
+## Run validators
 
     export $(cat .env | xargs) && python schedule.py
 
-# Run web server
+## Run web server
 
     export $(cat .env | xargs) && python main.py
