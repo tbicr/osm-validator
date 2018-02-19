@@ -1,0 +1,114 @@
+version: "3"
+
+services:
+
+  postgres:
+    image: mdillon/postgis:10-alpine
+    container_name: osmvalidator_postgres
+    restart: always
+    environment:
+      PG_DATABASE: $PG_DATABASE
+      # https://docs.docker.com/samples/library/postgres/#environment-variables
+      POSTGRES_USER: $PG_USER
+      POSTGRES_PASSWORD: $PG_PASSWORD
+      # https://www.postgresql.org/docs/10/static/libpq-envars.html
+      PGUSER: $PG_USER
+      PGPASSWORD: $PG_PASSWORD
+    volumes:
+      # https://github.com/docker-library/postgres/blob/master/10/docker-entrypoint.sh#L126
+      - ./config/db-init.sh:/docker-entrypoint-initdb.d/osmvalidator.sh
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - 5432
+
+  redis:
+    image: redis:4-alpine
+    container_name: osmvalidator_redis
+    restart: always
+    ports:
+      - 6379
+
+  migration:
+    container_name: osmvalidator_migration
+    image: osmvalidator
+    build: .
+    environment:
+      PGPASSWORD: $PG_PASSWORD
+    env_file:
+     - .env
+    links:
+      - postgres
+    depends_on:
+      - postgres
+    command:
+      - bash
+      - -c
+      - |
+        until [[ $$((echo > /dev/tcp/postgres/5432) >/dev/null 2>&1; echo $$?) -eq 0 ]]; do
+          echo waiting until postgres will be available
+          sleep 10
+        done
+        pipenv run alembic upgrade head
+
+  scheduler:
+    container_name: osmvalidator_scheduler
+    image: osmvalidator
+    build: .
+    environment:
+      PGPASSWORD: $PG_PASSWORD
+    env_file:
+     - .env
+    links:
+      - postgres
+    depends_on:
+      - postgres
+      - migration
+    command:
+      - bash
+      - -c
+      - |
+        until [[ $$((echo > /dev/tcp/postgres/5432) >/dev/null 2>&1; echo $$?) -eq 0 ]]; do
+          echo waiting until postgres will be available
+          sleep 10
+        done
+        until [[ $$(pipenv run alembic current 2>/dev/null) == *" (head)" ]]; do
+          echo waiting until migrations will be applied
+          sleep 10
+        done
+        while true; do
+          pipenv run python schedule.py
+          sleep $OSM_CHECK_TIMEOUT
+        done
+
+  web:
+    container_name: osmvalidator_web
+    restart: always
+    image: osmvalidator
+    build: .
+    ports:
+      - "0.0.0.0:8080:8080"
+    links:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - migration
+    command:
+      - bash
+      - -c
+      - |
+        until [[ $$((echo > /dev/tcp/postgres/5432) >/dev/null 2>&1; echo $$?) -eq 0 ]]; do
+          echo waiting until postgres will be available
+          sleep 10
+        done
+        until [[ $$(pipenv run alembic current 2>/dev/null) == *" (head)" ]]; do
+          echo waiting until migrations will be applied
+          sleep 10
+        done
+        pipenv run python main.py --host 0.0.0.0 --port 8080
+
+volumes:
+  db-data:
