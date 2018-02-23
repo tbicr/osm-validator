@@ -1,0 +1,49 @@
+version: "3"
+
+services:
+
+  postgres:
+    image: mdillon/postgis:10-alpine
+    container_name: osmvalidator_postgres
+    restart: always
+    environment:
+      PG_DATABASE: $PG_DATABASE
+      # https://docs.docker.com/samples/library/postgres/#environment-variables
+      POSTGRES_USER: $PG_USER
+      POSTGRES_PASSWORD: $PG_PASSWORD
+      # https://www.postgresql.org/docs/10/static/libpq-envars.html
+      PGUSER: $PG_USER
+      PGPASSWORD: $PG_PASSWORD
+    volumes:
+      # https://github.com/docker-library/postgres/blob/master/10/docker-entrypoint.sh#L126
+      - ./config/db-init.sh:/docker-entrypoint-initdb.d/osmvalidator.sh
+      - db-data-test:/var/lib/postgresql/data
+    ports:
+      - 5432
+
+  redis:
+    image: redis:4-alpine
+    container_name: osmvalidator_redis
+    restart: always
+    ports:
+      - 6379
+
+  test:
+    container_name: osmvalidator_test
+    image: osmvalidator
+    build: .
+    env_file:
+     - .env.test
+    environment:
+      PGPASSWORD: $PG_PASSWORD
+      PG_HOST: postgres
+      REDIS_HOST: redis
+    links:
+      - postgres
+      - redis
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  db-data-test:
