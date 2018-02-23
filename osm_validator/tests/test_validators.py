@@ -146,8 +146,8 @@ async def test_validator_initialization__ok(app, mocker):
 
         assert issue.handle == 'test_validator_new'
         assert issue.date_created is not None
-        assert issue.changeset_created is None
-        assert issue.user_created is None
+        assert issue.changeset_created_id is None
+        assert issue.user_created_id is None
 
 
 async def test_validator_processing__ok(app, mocker):
@@ -166,10 +166,10 @@ async def test_validator_processing__ok(app, mocker):
         issues = await (await conn.execute(
             Issue.__table__.insert().returning(Issue.__table__.c.id).values([{
                 'handle': 'test',
-                'user_created': 1,
+                'user_created_id': 1,
             }, {
                 'handle': 'test',
-                'user_created': 2,
+                'user_created_id': 2,
             }])
         )).fetchall()
         exist_issue_1, exist_issue_2 = issues
@@ -184,9 +184,9 @@ async def test_validator_processing__ok(app, mocker):
         async def check(self, change):
             self.check_called = change
             return [
-                Issue(handle='test', changeset_created=123, user_created=456),
+                Issue(handle='test', changeset_created_id=123, user_created_id=456),
             ], [
-                Issue(id=exist_issue_1.id, changeset_closed=123, user_closed=456),
+                Issue(id=exist_issue_1.id, changeset_closed_id=123, user_closed_id=456),
             ]
 
     get_sequence_number_mock = mocker.patch(
@@ -209,15 +209,15 @@ async def test_validator_processing__ok(app, mocker):
         issue_1, issue_2, issue_3 = issues
 
         assert issue_1.id == exist_issue_1.id
-        assert issue_1.changeset_closed == 123
-        assert issue_1.user_closed == 456
+        assert issue_1.changeset_closed_id == 123
+        assert issue_1.user_closed_id == 456
         assert issue_1.date_closed is not None
 
         assert issue_2.id == exist_issue_2.id
         assert issue_2.date_closed is None
 
         assert issue_3.handle == 'test'
-        assert issue_3.changeset_created == 123
-        assert issue_3.user_created == 456
+        assert issue_3.changeset_created_id == 123
+        assert issue_3.user_created_id == 456
         assert issue_3.date_created is not None
         assert issue_3.date_closed is None

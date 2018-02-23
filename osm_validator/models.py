@@ -3,11 +3,13 @@ import enum
 from aiopg.sa import create_engine
 from geoalchemy2 import Geometry
 from sqlalchemy import (
-    BigInteger, Column, DateTime, Enum, Float, ForeignKey, Index, SmallInteger,
-    String, func
+    BigInteger, CheckConstraint, Column, DateTime, Enum, Float, ForeignKey,
+    Index, Integer, PrimaryKeyConstraint, SmallInteger, String, func
 )
 from sqlalchemy.dialects.postgresql import ARRAY, HSTORE, JSON
 from sqlalchemy.ext.declarative import declarative_base
+
+from osm_validator.settings import PROJ
 
 Base = declarative_base()
 
@@ -125,6 +127,19 @@ class State(Base):
         return '<State: {} {}>'.format(self.key, self.value)
 
 
+class Area(Base):
+    __tablename__ = 'vld_area'
+
+    id = Column(Integer, primary_key=True)
+    parent_id = Column(Integer, ForeignKey('vld_area.id'), nullable=True, index=True)
+    level = Column(SmallInteger, CheckConstraint('level > 0'), nullable=False)
+    name = Column(String(64), nullable=False)
+    geom = Column(Geometry('GEOMETRY', srid=PROJ, spatial_index=True), nullable=False)
+
+    def __repr__(self):
+        return '<Area: {} {}>'.format(self.level, self.name)
+
+
 class Feature(Base):
     __tablename__ = 'vld_feature'
 
@@ -140,42 +155,76 @@ class Issue(Base):
 
     id = Column(BigInteger, primary_key=True)
     handle = Column(String(64), ForeignKey('vld_feature.handle'), nullable=False)
-    changeset_created = Column(BigInteger, nullable=True)
-    changeset_closed = Column(BigInteger, nullable=True)
-    user_created = Column(BigInteger, nullable=True, index=True)
-    user_closed = Column(BigInteger, nullable=True, index=True)
+    changeset_created_id = Column(BigInteger, nullable=True)
+    changeset_closed_id = Column(BigInteger, nullable=True)
+    user_created_id = Column(BigInteger, nullable=True, index=True)
+    user_closed_id = Column(BigInteger, nullable=True, index=True)
     date_created = Column(DateTime, nullable=False, server_default=func.now())
     date_closed = Column(DateTime, nullable=True)
-    affected_nodes = Column(ARRAY(BigInteger), nullable=True)
-    affected_ways = Column(ARRAY(BigInteger), nullable=True)
-    affected_rels = Column(ARRAY(BigInteger), nullable=True)
+    affected_node_ids = Column(ARRAY(BigInteger), nullable=True)
+    affected_way_ids = Column(ARRAY(BigInteger), nullable=True)
+    affected_rel_ids = Column(ARRAY(BigInteger), nullable=True)
 
     __table_args__ = (
-        Index('ix_vld_issue_handle_affected_nodes', handle, affected_nodes,
+        Index('ix_vld_issue_handle_affected_node_ids', handle, affected_node_ids,
               postgresql_where=(date_closed.isnot(None))),
-        Index('ix_vld_issue_handle_affected_ways', handle, affected_ways,
+        Index('ix_vld_issue_handle_affected_way_ids', handle, affected_way_ids,
               postgresql_where=(date_closed.isnot(None))),
-        Index('ix_vld_issue_handle_affected_rels', handle, affected_rels,
+        Index('ix_vld_issue_handle_affected_rel_ids', handle, affected_rel_ids,
               postgresql_where=(date_closed.isnot(None))),
     )
 
-    def __init__(self, id=None, handle=None, changeset_created=None, changeset_closed=None,
-                 user_created=None, user_closed=None, date_created=None, date_closed=None,
-                 affected_nodes=None, affected_ways=None, affected_rels=None):
+    def __init__(self, id=None, handle=None, changeset_created_id=None, changeset_closed_id=None,
+                 user_created_id=None, user_closed_id=None, date_created=None, date_closed=None,
+                 affected_node_ids=None, affected_way_ids=None, affected_rel_ids=None):
         self.id = id
         self.handle = handle
-        self.changeset_created = changeset_created
-        self.changeset_closed = changeset_closed
-        self.user_created = user_created
-        self.user_closed = user_closed
+        self.changeset_created_id = changeset_created_id
+        self.changeset_closed_id = changeset_closed_id
+        self.user_created_id = user_created_id
+        self.user_closed_id = user_closed_id
         self.date_created = date_created
         self.date_closed = date_closed
-        self.affected_nodes = affected_nodes
-        self.affected_ways = affected_ways
-        self.affected_rels = affected_rels
+        self.affected_node_ids = affected_node_ids
+        self.affected_way_ids = affected_way_ids
+        self.affected_rel_ids = affected_rel_ids
 
     def __repr__(self):
         return '<Issue: {} {}>'.format(self.handle, self.id)
+
+
+class Activity(Base):
+    __tablename__ = 'vld_activity'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger, ForeignKey('vld_user.osm_uid'), nullable=False, index=True)
+    name = Column(String(64), nullable=False)
+    date_created = Column(DateTime, nullable=False, server_default=func.now())
+
+    def __repr__(self):
+        return '<Activity: {} {}>'.format(self.user, self.name)
+
+
+class ActivityArea(Base):
+    __tablename__ = 'vld_activity_area'
+
+    activity_id = Column(Integer, ForeignKey('vld_activity.id'))
+    area_id = Column(Integer, ForeignKey('vld_area.id'))
+
+    __table_args__ = (
+        PrimaryKeyConstraint('activity_id', 'area_id'),
+    )
+
+
+class ActivityFeature(Base):
+    __tablename__ = 'vld_activity_feature'
+
+    activity_id = Column(Integer, ForeignKey('vld_activity.id'))
+    feature_handle = Column(String(64), ForeignKey('vld_feature.handle'))
+
+    __table_args__ = (
+        PrimaryKeyConstraint('activity_id', 'feature_handle'),
+    )
 
 
 async def setup(app):

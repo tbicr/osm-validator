@@ -55,7 +55,7 @@ async def _init_database(app, conn, file_name):
     command = (
         'osm2pgsql --username {username} --host {host} --port {port} --database {database} '
         '--create --slim --cache {cache} --style {style} --prefix=osm '
-        '--latlong --hstore-all --hstore-add-index --multi-geometry '
+        '--proj {proj} --hstore-all --hstore-add-index --multi-geometry '
         '--keep-coastlines --extra-attributes '
         '{file}'
     ).format(
@@ -65,6 +65,7 @@ async def _init_database(app, conn, file_name):
         database=app.config.DATABASE['database'],
         cache=app.config.OSM2PGSQL_CACHE,
         style=app.config.OSM2PGSQL_STYLE,
+        proj=app.config.PROJ,
         file=file_name,
     )
     subprocess.run(command, shell=True, check=True)
@@ -81,7 +82,7 @@ async def _apply_osc_to_database(app, conn, sequence_number, file_name):
     command = (
         'osm2pgsql --username {username} --host {host} --port {port} --database {database} '
         '--append --slim --cache {cache} --style {style} --prefix=osm '
-        '--latlong --hstore-all --hstore-add-index --multi-geometry '
+        '--proj {proj} --hstore-all --hstore-add-index --multi-geometry '
         '--keep-coastlines --extra-attributes '
         '{file}'
     ).format(
@@ -91,6 +92,7 @@ async def _apply_osc_to_database(app, conn, sequence_number, file_name):
         database=app.config.DATABASE['database'],
         cache=app.config.OSM2PGSQL_CACHE,
         style=app.config.OSM2PGSQL_STYLE,
+        proj=app.config.PROJ,
         file=file_name,
     )
     subprocess.run(command, shell=True, check=True)
@@ -145,9 +147,9 @@ async def init_validators():
                 await conn.execute(Issue.__table__.insert().values([{
                     'handle': issue.handle,
                     'date_created': func.now(),
-                    'affected_nodes': issue.affected_nodes,
-                    'affected_ways': issue.affected_ways,
-                    'affected_rels': issue.affected_rels,
+                    'affected_node_ids': issue.affected_node_ids,
+                    'affected_way_ids': issue.affected_way_ids,
+                    'affected_rel_ids': issue.affected_rel_ids,
                 } for issue in new]))
     finally:
         await app.cleanup()
@@ -195,20 +197,20 @@ async def process_changes():
                 if new:
                     await conn.execute(Issue.__table__.insert().values([{
                         'handle': issue.handle,
-                        'changeset_created': issue.changeset_created,
-                        'user_created': issue.user_created,
+                        'changeset_created_id': issue.changeset_created_id,
+                        'user_created_id': issue.user_created_id,
                         'date_created': func.now(),
-                        'affected_nodes': issue.affected_nodes,
-                        'affected_ways': issue.affected_ways,
-                        'affected_rels': issue.affected_rels,
+                        'affected_node_ids': issue.affected_node_ids,
+                        'affected_way_ids': issue.affected_way_ids,
+                        'affected_rel_ids': issue.affected_rel_ids,
                     } for issue in new]))
                 if fixed:
                     for issue in fixed:
                         await conn.execute(Issue.__table__.update().where(
                             Issue.__table__.c.id == issue.id
                         ).values(
-                            changeset_closed=issue.changeset_closed,
-                            user_closed=issue.user_closed,
+                            changeset_closed_id=issue.changeset_closed_id,
+                            user_closed_id=issue.user_closed_id,
                             date_closed=func.now(),
                         ))
     finally:

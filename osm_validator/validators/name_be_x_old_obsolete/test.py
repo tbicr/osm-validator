@@ -67,10 +67,10 @@ async def test_name_be_x_old__init__ok(app):
 
         issue_1, = new
         assert issue_1.handle == 'name_be_x_old_obsolete'
-        assert issue_1.changeset_created is None
-        assert issue_1.user_created is None
+        assert issue_1.changeset_created_id is None
+        assert issue_1.user_created_id is None
         assert issue_1.date_created is None
-        assert issue_1.affected_nodes == [1]
+        assert issue_1.affected_node_ids == [1]
 
 
 async def test_name_be_x_old__update_from_osc__ok(app):
@@ -82,41 +82,41 @@ async def test_name_be_x_old__update_from_osc__ok(app):
         await conn.execute(Issue.__table__.delete())
         await conn.execute(Issue.__table__.insert().values([{
             'handle': 'name_be_x_old_obsolete',
-            'affected_nodes': [3],
+            'affected_node_ids': [3],
         }, {
             'handle': 'name_be_x_old_obsolete',
-            'affected_nodes': [4],
+            'affected_node_ids': [4],
         }, {
             'handle': 'name_be_x_old_obsolete',
-            'affected_nodes': [5],
+            'affected_node_ids': [5],
         }]))
 
         validator = NameBeXOldObsoleteValidator(conn)
         new, fixed = await validator.check(CHANGE)
 
-        issue_1, issue_2 = sorted(new, key=lambda i: i.affected_nodes)
-        issue_3, issue_4 = sorted(fixed, key=lambda i: i.affected_nodes)
+        issue_1, issue_2 = sorted(new, key=lambda i: i.affected_node_ids)
+        issue_3, issue_4 = sorted(fixed, key=lambda i: i.affected_node_ids)
 
         assert issue_1.handle == 'name_be_x_old_obsolete'
-        assert issue_1.changeset_created == 456
-        assert issue_1.user_created == 123
+        assert issue_1.changeset_created_id == 456
+        assert issue_1.user_created_id == 123
         assert issue_1.date_created == datetime(2018, 1, 1)
-        assert issue_1.affected_nodes == [1]
+        assert issue_1.affected_node_ids == [1]
 
         assert issue_2.handle == 'name_be_x_old_obsolete'
-        assert issue_2.changeset_created == 456
-        assert issue_2.user_created == 123
+        assert issue_2.changeset_created_id == 456
+        assert issue_2.user_created_id == 123
         assert issue_2.date_created == datetime(2018, 1, 1)
-        assert issue_2.affected_nodes == [2]
+        assert issue_2.affected_node_ids == [2]
 
         assert issue_3.handle == 'name_be_x_old_obsolete'
-        assert issue_3.changeset_closed == 456
-        assert issue_3.user_closed == 123
+        assert issue_3.changeset_closed_id == 456
+        assert issue_3.user_closed_id == 123
         assert issue_3.date_closed == datetime(2018, 1, 1)
-        assert issue_3.affected_nodes == [3]
+        assert issue_3.affected_node_ids == [3]
 
         assert issue_4.handle == 'name_be_x_old_obsolete'
-        assert issue_4.changeset_closed == 456
-        assert issue_4.user_closed == 123
+        assert issue_4.changeset_closed_id == 456
+        assert issue_4.user_closed_id == 123
         assert issue_4.date_closed == datetime(2018, 1, 1)
-        assert issue_4.affected_nodes == [4]
+        assert issue_4.affected_node_ids == [4]
