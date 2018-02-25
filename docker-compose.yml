@@ -32,10 +32,11 @@ services:
     container_name: osmvalidator_migration
     image: osmvalidator
     build: .
-    environment:
-      PGPASSWORD: $PG_PASSWORD
     env_file:
      - .env
+    environment:
+      PGPASSWORD: $PG_PASSWORD
+      PG_HOST: postgres
     links:
       - postgres
     depends_on:
@@ -54,10 +55,11 @@ services:
     container_name: osmvalidator_scheduler
     image: osmvalidator
     build: .
-    environment:
-      PGPASSWORD: $PG_PASSWORD
     env_file:
      - .env
+    environment:
+      PGPASSWORD: $PG_PASSWORD
+      PG_HOST: postgres
     links:
       - postgres
     depends_on:
@@ -102,6 +104,10 @@ services:
       - redis
     env_file:
       - .env
+    environment:
+      PGPASSWORD: $PG_PASSWORD
+      PG_HOST: postgres
+      REDIS_HOST: redis
     depends_on:
       - postgres
       - redis

@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:17.10
 
 ENV LC_ALL=C.UTF-8
 ENV LANG C.UTF-8
@@ -11,10 +11,8 @@ RUN apt-get install -y --no-install-recommends net-tools curl software-propertie
 RUN apt-get install -y --no-install-recommends osm2pgsql osmctools
 
 # install python3
-RUN add-apt-repository -y ppa:deadsnakes/ppa \
-    && apt-get update \
-    && apt-get install -q -y --no-install-recommends \
-        python3.6 python3.6-dev python3-pip python3-setuptools python3-wheel gcc
+RUN apt-get install -q -y --no-install-recommends \
+    python3.6 python3.6-dev python3-pip python3-setuptools python3-wheel gcc build-essential
 
 # install nodejs, npm
 RUN curl -sL https://deb.nodesource.com/setup_9.x | bash
@@ -39,6 +37,11 @@ COPY osm2pgslq.style /app/osm2pgslq.style
 COPY migrations /app/migrations/
 COPY alembic.ini /app/alembic.ini
 
+# python test
+COPY tox.ini /app/tox.ini
+COPY setup.cfg /app/setup.cfg
+COPY empty.osm /app/empty.osm
+
 # static
 COPY osm_validator_front/ /app/osm_validator_front/
 COPY static/ /app/static/
@@ -52,8 +55,10 @@ COPY .eslintrc /app/.eslintrc
 RUN pip3 install pipenv --upgrade
 RUN pipenv install --python python3.6
 
-# build js app
+# # install js requirements
 RUN npm install
+
+# build js app
 RUN node_modules/.bin/webpack
 
 CMD ["/bin/bash"]
