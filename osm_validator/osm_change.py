@@ -187,11 +187,11 @@ class OsmChange(object):
 
 class OsmChangeList(object):
 
-    def __init__(self, changes, affected_nodes, affected_ways, affected_rels):
+    def __init__(self, changes, affected_node_ids, affected_way_ids, affected_rel_ids):
         self.changes = changes
-        self.affected_nodes = affected_nodes
-        self.affected_ways = affected_ways
-        self.affected_rels = affected_rels
+        self.affected_node_ids = affected_node_ids
+        self.affected_way_ids = affected_way_ids
+        self.affected_rel_ids = affected_rel_ids
 
 
 def parse_osc(file):
@@ -212,7 +212,7 @@ def parse_osc(file):
         ('modify', 'relation'): 'modified_relations',
     }
     changes = {}
-    affected = {
+    affected_ids = {
         'node': set(),
         'way': set(),
         'relation': set(),
@@ -225,8 +225,8 @@ def parse_osc(file):
             if instance.changeset not in changes:
                 changes[instance.changeset] = OsmChange(instance.changeset)
             getattr(changes[instance.changeset], match_path[(element.tag, item.tag)]).add(instance)
-            affected[item.tag].add(instance.id)
+            affected_ids[item.tag].add(instance.id)
     return OsmChangeList(
         tuple(sorted(changes.values(), key=lambda c: c.changeset)),
-        affected['node'], affected['way'], affected['relation'],
+        affected_ids['node'], affected_ids['way'], affected_ids['relation'],
     )
