@@ -4,7 +4,7 @@ ENV LC_ALL=C.UTF-8
 ENV LANG C.UTF-8
 
 # update os
-RUN apt-get -yqq update --fix-missing
+RUN apt-get -y update --fix-missing
 RUN apt-get install -y --no-install-recommends net-tools curl software-properties-common
 
 # install dependencies
