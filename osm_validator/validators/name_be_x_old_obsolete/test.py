@@ -6,7 +6,6 @@ from osm_validator.validators.name_be_x_old_obsolete import (
     NameBeXOldObsoleteValidator
 )
 
-
 CHANGE = parse_osc("""<?xml version='1.0' encoding='UTF-8'?>
 <osmChange version="0.6" generator="osmium/1.5.1">
   <create>
