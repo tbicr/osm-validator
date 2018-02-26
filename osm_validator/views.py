@@ -49,7 +49,7 @@ async def oauth_login(request):
 async def oauth_complete(request):
     session = await get_session(request=request)
 
-    request_token = request.GET['oauth_token']
+    request_token = request.query['oauth_token']
     request_token_secret = await request.app.redis.oauth.get(request_token)
     if request_token_secret is None:
         return web.HTTPFound(request.app.router['oauth:login'].url_for())

@@ -1,8 +1,13 @@
 import os
 
-from aioresponses import aioresponses
+from aioresponses import aioresponses as _aioresponses
 
 from osm_validator.oauth import OSMOauthClient
+
+
+class aioresponses(_aioresponses):
+    def match(self, method, url):
+        return super().match(method, url.split('?')[0])
 
 
 async def test_osm_oauth_client__ok():
@@ -11,6 +16,7 @@ async def test_osm_oauth_client__ok():
     with aioresponses() as response_mocker:
         response_mocker.get(
             'https://www.openstreetmap.org/oauth/request_token', status=200,
+            content_type='text/plain; charset=utf-8',
             body=b'oauth_token=REQUEST_TOKEN&oauth_token_secret=REQUEST_SECRET')
         request_token, request_token_secret, _ = await oauth_client.get_request_token()
     assert request_token == 'REQUEST_TOKEN'
@@ -22,6 +28,7 @@ async def test_osm_oauth_client__ok():
     with aioresponses() as response_mocker:
         response_mocker.post(
             'https://www.openstreetmap.org/oauth/access_token', status=200,
+            content_type='text/plain; charset=utf-8',
             body=b'oauth_token=OAUTH_TOKEN&oauth_token_secret=OAUTH_SECRET')
         oauth_token, oauth_token_secret, _ = await oauth_client.get_access_token('REQUEST_TOKEN')
     assert oauth_token == 'OAUTH_TOKEN'
@@ -31,6 +38,7 @@ async def test_osm_oauth_client__ok():
     with aioresponses() as response_mocker:
         response_mocker.get(
             'https://api.openstreetmap.org/api/0.6/user/details', status=200,
+            content_type='text/xml; charset=utf-8',
             body=open(osm_stub_user_details, 'rb').read())
         user, _ = await oauth_client.user_info()
     assert user == {

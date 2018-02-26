@@ -33,8 +33,8 @@ def app(loop):
 
 
 @pytest.fixture
-async def client(loop, app, test_client):
-    return await test_client(app)
+def client(loop, app, aiohttp_client):
+    return loop.run_until_complete(aiohttp_client(app))
 
 
 class OSM2PBFWrapper(object):

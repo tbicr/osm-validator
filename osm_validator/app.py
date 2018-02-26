@@ -28,4 +28,6 @@ async def build_application():
 
     await routes.setup(app)
 
+    app.freeze()
+
     return app
