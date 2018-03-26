@@ -1,3 +1,4 @@
+import asyncio
 import gzip
 import logging
 import os
@@ -5,7 +6,7 @@ import subprocess
 from tempfile import NamedTemporaryFile
 from urllib.parse import urljoin
 
-import requests.adapters
+import aiohttp
 from sqlalchemy import func, select
 
 from osm_validator.app import build_application
@@ -16,21 +17,9 @@ from osm_validator.validators.base import Validator
 logger = logging.getLogger()
 
 
-class LocalFileAdapter(requests.adapters.HTTPAdapter):
-    def build_response_from_file(self, request):
-        file_path = request.url[len('file://'):]
-        file = open(file_path, 'rb')
-        file.status = 200
-        file.reason = 'OK'
-        return self.build_response(request, file)
-
-    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
-        return self.build_response_from_file(request)
-
-
 def _get_latest_sequence_number(base_url):
     url = urljoin(base_url, 'state.txt')
-    response = requests.get(url, timeout=5)
+    response = yield from asyncio.wait_for(aiohttp.request('get', url), 5)
     if response.status_code != 200:
         return None
     for line in response.text.splitlines():
@@ -45,7 +34,7 @@ def _build_osc_url(base_url, sequence_number):
 
 
 def _fetch_osc(url):
-    response = requests.get(url, stream=True, timeout=30)
+    response = yield from asyncio.wait_for(aiohttp.request('get', url), 30)
     response.raise_for_status()
     gzfile = gzip.GzipFile(fileobj=response.raw)
     return gzfile.read()
@@ -110,10 +99,9 @@ async def init_database():
     # run once with migration
     app = await build_application()
     try:
-        session = requests.session()
-        session.mount('file://', LocalFileAdapter())
+        session = aiohttp.ClientSession()
         logger.debug('Fetch init pdf file %s', app.config.OSM_INIT_PBF)
-        response = session.get(app.config.OSM_INIT_PBF, stream=True)
+        response = session.get(url=app.config.OSM_INIT_PBF, stream=True)
         response.raise_for_status()
         with NamedTemporaryFile(suffix=os.path.splitext(app.config.OSM_INIT_PBF)[-1]) as handle:
             for block in response.iter_content(chunk_size=None):
