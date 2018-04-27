@@ -1,11 +1,11 @@
-FROM ubuntu:17.10
+FROM ubuntu:18.04
 
 ENV LC_ALL=C.UTF-8
 ENV LANG C.UTF-8
 
 # update os
 RUN apt-get -y update --fix-missing
-RUN apt-get install -y --no-install-recommends net-tools curl software-properties-common
+RUN apt-get install -y --no-install-recommends net-tools curl software-properties-common gnupg-agent
 
 # install dependencies
 RUN apt-get install -y --no-install-recommends osm2pgsql osmctools
@@ -15,7 +15,7 @@ RUN apt-get install -q -y --no-install-recommends \
     python3.6 python3.6-dev python3-pip python3-setuptools python3-wheel gcc build-essential
 
 # install nodejs, npm
-RUN curl -sL https://deb.nodesource.com/setup_9.x | bash
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
 RUN apt-get install -y nodejs
 
 RUN apt-get clean && \
