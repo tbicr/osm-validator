@@ -3,7 +3,7 @@ import time
 
 from cryptography.fernet import Fernet
 
-from osm_validator.models import User
+from osm_validator.models import Activity, User
 
 
 def make_cookie(client, fernet, data):
@@ -118,3 +118,29 @@ async def test_unloaginneed_user__ok(app, client):
 
     assert response.status == 401
     assert await response.text() == '401: Unauthorized'
+
+
+async def test_get_activity_list__ok(app, client):
+    async with app.db.acquire() as conn:
+        await conn.execute(User.__table__.delete())
+        await conn.execute(User.__table__.insert().values({
+            'osm_uid': 1,
+            'osm_user': 'user',
+        }))
+        user = User(**await (await conn.execute(User.__table__.select())).fetchone())
+        await conn.execute(Activity.__table__.insert().values({
+            'user_id': user.uid,
+            'name': 'test',
+        }))
+        activity = Activity(**await (await conn.execute(Activity.__table__.select())).fetchone())
+
+    url = app.router['user:activity:list'].url_for()
+    make_cookie(client, Fernet(app.config.SECRET_KEY), {'user_id': 1})
+    response = await client.get(url)
+
+    assert response.status == 200
+    assert await response.json() == [{
+        'id': activity.id,
+        'name': 'test',
+        'date_created': activity.date_created.isoformat(),
+    }]
